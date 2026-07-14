@@ -1,24 +1,7 @@
 import Head from 'next/head'
 import { useState } from 'react'
-
-const WA = '213560836384'
-const SIZES = ['XS','S','M','L','XL','XXL','3XL']
-const COLORS = ['Blanc','Noir','Marine','Gris','Bordeaux','Vert bouteille','Beige','Bleu ciel','Jaune','Rouge','Personnalisée']
-
-const PRODUCTS = [
-  { emoji:'👕', name:'Polo', price:1200 },
-  { emoji:'👕', name:'T-shirt', price:950 },
-  { emoji:'👔', name:'Chemise', price:1800 },
-  { emoji:'🧥', name:'Veste', price:3500 },
-  { emoji:'🥼', name:'Tablier', price:900 },
-  { emoji:'🦺', name:'Gilet', price:1400 },
-  { emoji:'🧢', name:'Casquette', price:650 },
-  { emoji:'👖', name:'Pantalon', price:2200 },
-]
-
-const TECHNIQUES = ['Broderie','Sérigraphie','Transfert numérique','Sublimation','Flocage']
-
-const WILAYAS = ['01 Adrar','02 Chlef','03 Laghouat','04 Oum El Bouaghi','05 Batna','06 Béjaïa','07 Biskra','08 Béchar','09 Blida','10 Bouira','11 Tamanrasset','12 Tébessa','13 Tlemcen','14 Tiaret','15 Tizi Ouzou','16 Alger','17 Djelfa','18 Jijel','19 Sétif','20 Saïda','21 Skikda','22 Sidi Bel Abbès','23 Annaba','24 Guelma','25 Constantine','26 Médéa','27 Mostaganem','28 M\'Sila','29 Mascara','30 Ouargla','31 Oran','32 El Bayadh','33 Illizi','34 Bordj Bou Arréridj','35 Boumerdès','36 El Tarf','37 Tindouf','38 Tissemsilt','39 El Oued','40 Khenchela','41 Souk Ahras','42 Tipaza','43 Mila','44 Aïn Defla','45 Naâma','46 Aïn Témouchent','47 Ghardaïa','48 Relizane','49 Timimoun','50 Bordj Badji Mokhtar','51 Ouled Djellal','52 Béni Abbès','53 In Salah','54 In Guezzam','55 Touggourt','56 Djanet','57 El M\'Ghair','58 El Meniaa']
+import { PRODUCTS } from '../lib/products'
+import { WA, SIZES, COLORS, TECHNIQUES, WILAYAS } from '../lib/constants'
 
 export default function Commande() {
   const [step, setStep] = useState(1)
@@ -171,7 +154,7 @@ export default function Commande() {
           ))}
         </div>
 
-        <div style={{display:'grid',gridTemplateColumns:'1fr 380px',gap:'3rem',alignItems:'start'}}>
+        <div className="wizard-layout" style={{display:'grid',gridTemplateColumns:'1fr 380px',gap:'3rem',alignItems:'start'}}>
           {/* LEFT — Wizard steps */}
           <div>
 
@@ -181,18 +164,46 @@ export default function Commande() {
                 <h3 style={{fontFamily:'Anton',fontSize:'1.2rem',textTransform:'uppercase',marginBottom:'1.5rem'}}>1. Choisissez vos produits</h3>
 
                 {/* Product picker */}
-                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))',gap:'.7rem',marginBottom:'1.5rem'}}>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))',gap:'1.2rem',marginBottom:'2rem'}}>
                   {PRODUCTS.map(p => (
-                    <button key={p.name} onClick={()=>setSelProd(p)} style={{
-                      padding:'1rem .8rem',border:'1.5px solid',borderRadius:'6px',cursor:'pointer',
-                      fontFamily:'Inter',textAlign:'center',transition:'all .2s',
+                    <div key={p.name} onClick={()=>setSelProd(p)} style={{
+                      border:'1.5px solid', borderRadius:'10px', cursor:'pointer',
+                      overflow:'hidden', background:'var(--white)', transition:'all .2s',
                       borderColor: selProd.name===p.name ? 'var(--green)' : 'var(--cream-border)',
-                      background: selProd.name===p.name ? 'var(--green-pale)' : 'var(--white)',
+                      boxShadow: selProd.name===p.name ? 'var(--shadow)' : 'none',
+                      position:'relative',
                     }}>
-                      <div style={{fontSize:'2rem',marginBottom:'.4rem'}}>{p.emoji}</div>
-                      <div style={{fontWeight:700,fontSize:'.8rem'}}>{p.name}</div>
-                      <div style={{fontSize:'.72rem',color:'var(--green)',fontWeight:600,marginTop:'.2rem'}}>{p.price.toLocaleString()} DA</div>
-                    </button>
+                      {selProd.name===p.name && (
+                        <span style={{
+                          position:'absolute', top:10, right:10, zIndex:1,
+                          width:24, height:24, borderRadius:'50%', background:'var(--green)',
+                          color:'var(--white)', display:'flex', alignItems:'center', justifyContent:'center',
+                          fontSize:'.75rem', fontWeight:700,
+                        }}>✓</span>
+                      )}
+                      {p.popular && (
+                        <span style={{
+                          position:'absolute', top:10, left:10, zIndex:1,
+                          background:'var(--gold)', color:'var(--white)',
+                          fontSize:'.6rem', fontWeight:700, padding:'.2rem .6rem', borderRadius:'100px',
+                          letterSpacing:'.08em', textTransform:'uppercase',
+                        }}>Populaire</span>
+                      )}
+                      {/* Image / mockup area — real product photos coming soon, emoji placeholder for now */}
+                      <div style={{
+                        aspectRatio:'4/3', background:'var(--cream-dark)',
+                        display:'flex', alignItems:'center', justifyContent:'center',
+                      }}>
+                        <span style={{fontSize:'4.2rem'}}>{p.emoji}</span>
+                      </div>
+                      <div style={{padding:'1rem 1.1rem'}}>
+                        <div style={{fontFamily:'Anton',fontSize:'1.05rem',textTransform:'uppercase',letterSpacing:'.02em',marginBottom:'.3rem'}}>{p.name}</div>
+                        <div style={{fontSize:'.78rem',color:'var(--muted)',lineHeight:1.5,marginBottom:'.6rem',minHeight:'2.2em'}}>{p.desc}</div>
+                        <div style={{fontFamily:'Anton',fontSize:'1.1rem',color:'var(--green)'}}>
+                          {p.price.toLocaleString('fr-DZ')} DA <span style={{fontFamily:'Inter',fontSize:'.68rem',color:'var(--muted)',fontWeight:500,textTransform:'none',letterSpacing:0}}>/ pièce</span>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
 
@@ -214,7 +225,7 @@ export default function Commande() {
                 {/* Sizes */}
                 <div style={{marginBottom:'1.5rem'}}>
                   <label style={labelStyle}>Quantités par taille</label>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'.5rem'}}>
+                  <div className="size-grid" style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'.5rem'}}>
                     {SIZES.map(s=>(
                       <div key={s} style={{textAlign:'center'}}>
                         <div style={{fontSize:'.7rem',fontWeight:700,color:'var(--muted)',marginBottom:'.3rem'}}>{s}</div>
@@ -326,7 +337,7 @@ export default function Commande() {
               <div>
                 <h3 style={{fontFamily:'Anton',fontSize:'1.2rem',textTransform:'uppercase',marginBottom:'1.5rem'}}>3. Livraison & Paiement</h3>
 
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem',marginBottom:'1rem'}}>
+                <div className="two-col-form" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem',marginBottom:'1rem'}}>
                   <div>
                     <label style={labelStyle}>Nom complet *</label>
                     <input style={inputStyle} placeholder="Votre nom" value={form.nom} onChange={e=>setForm(f=>({...f,nom:e.target.value}))} />
@@ -340,7 +351,7 @@ export default function Commande() {
                   </div>
                 </div>
 
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem',marginBottom:'1rem'}}>
+                <div className="two-col-form" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem',marginBottom:'1rem'}}>
                   <div>
                     <label style={labelStyle}>Entreprise</label>
                     <input style={inputStyle} placeholder="Optionnel" value={form.entreprise} onChange={e=>setForm(f=>({...f,entreprise:e.target.value}))} />
@@ -368,7 +379,7 @@ export default function Commande() {
                 {/* Mode paiement */}
                 <div style={{marginBottom:'2rem'}}>
                   <label style={labelStyle}>Mode de paiement</label>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'.8rem'}}>
+                  <div className="pay-grid" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'.8rem'}}>
                     {[
                       {key:'livraison',label:'À la livraison',ic:'🚚',sub:'Standard'},
                       {key:'ccp',label:'CCP / Baridimob',ic:'🏦',sub:'−10% de remise'},
@@ -399,7 +410,7 @@ export default function Commande() {
           </div>
 
           {/* RIGHT — Récapitulatif */}
-          <div style={{position:'sticky',top:'120px'}}>
+          <div className="wizard-summary" style={{position:'sticky',top:'120px'}}>
             <div style={{background:'var(--white)',border:'1.5px solid var(--cream-border)',borderRadius:'8px',overflow:'hidden'}}>
               <div style={{padding:'1.2rem 1.5rem',borderBottom:'1px solid var(--cream-border)',fontFamily:'Anton',fontSize:'1rem',textTransform:'uppercase',letterSpacing:'.04em'}}>
                 📋 Récapitulatif
