@@ -2,10 +2,12 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
 import { PRODUCTS } from '../lib/products'
-import { VOLUME_DISCOUNTS } from '../lib/constants'
+import { VOLUME_DISCOUNTS, SUPABASE_IMG_BASE } from '../lib/constants'
 
 export default function Catalogue() {
   const [activeProduct, setActiveProduct] = useState(PRODUCTS[0])
+  const [photoFailed, setPhotoFailed] = useState(false)
+  useEffect(() => { setPhotoFailed(false) }, [activeProduct])
   const [vizMode, setVizMode] = useState('visitor') // visitor | client
   const [logoSrc, setLogoSrc] = useState(null)
   const [logoPos, setLogoPos] = useState({ x: 50, y: 40 })
@@ -46,18 +48,33 @@ export default function Catalogue() {
     canvas.width = 600; canvas.height = 600
     const ctx = canvas.getContext('2d')
     ctx.fillStyle = '#F5F0E8'; ctx.fillRect(0,0,600,600)
-    ctx.font = '200px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-    ctx.fillText(activeProduct.emoji, 300, 300)
-    if (logoSrc) {
-      const img = new window.Image()
-      img.onload = () => {
-        ctx.drawImage(img, (logoPos.x/100)*600 - logoSize/2, (logoPos.y/100)*600 - logoSize/2, logoSize, logoSize)
+
+    const drawLogoThenSave = () => {
+      if (logoSrc) {
+        const img = new window.Image()
+        img.onload = () => {
+          ctx.drawImage(img, (logoPos.x/100)*600 - logoSize/2, (logoPos.y/100)*600 - logoSize/2, logoSize, logoSize)
+          const a = document.createElement('a'); a.download = 'djimmy-apercu.png'; a.href = canvas.toDataURL(); a.click()
+        }
+        img.src = logoSrc
+      } else {
         const a = document.createElement('a'); a.download = 'djimmy-apercu.png'; a.href = canvas.toDataURL(); a.click()
       }
-      img.src = logoSrc
-    } else {
-      const a = document.createElement('a'); a.download = 'djimmy-apercu.png'; a.href = canvas.toDataURL(); a.click()
     }
+
+    // Try the real product photo first; fall back to the emoji mockup if it fails to load
+    const productImg = new window.Image()
+    productImg.crossOrigin = 'anonymous'
+    productImg.onload = () => {
+      ctx.drawImage(productImg, 0, 0, 600, 600)
+      drawLogoThenSave()
+    }
+    productImg.onerror = () => {
+      ctx.font = '200px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+      ctx.fillText(activeProduct.emoji, 300, 300)
+      drawLogoThenSave()
+    }
+    productImg.src = `${SUPABASE_IMG_BASE}/${activeProduct.photo}`
   }
 
   return (
@@ -127,7 +144,16 @@ export default function Catalogue() {
               onMouseUp={handleCanvasMouseUp}
               onMouseLeave={handleCanvasMouseUp}
             >
-              <span style={{fontSize:'12rem',userSelect:'none',pointerEvents:'none'}}>{activeProduct.emoji}</span>
+              {photoFailed ? (
+                <span style={{fontSize:'12rem',userSelect:'none',pointerEvents:'none'}}>{activeProduct.emoji}</span>
+              ) : (
+                <img
+                  src={`${SUPABASE_IMG_BASE}/${activeProduct.photo}`}
+                  alt={activeProduct.name}
+                  style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',pointerEvents:'none',userSelect:'none'}}
+                  onError={() => setPhotoFailed(true)}
+                />
+              )}
               {logoSrc && (
                 <img src={logoSrc} alt="Logo" style={{
                   position:'absolute',
