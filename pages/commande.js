@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import { useState } from 'react'
 import { PRODUCTS } from '../lib/products'
-import { WA, SIZES, COLORS, TECHNIQUES, WILAYAS } from '../lib/constants'
+import { WA, SIZES, COLORS, TECHNIQUES, WILAYAS, SUPABASE_IMG_BASE } from '../lib/constants'
 
 export default function Commande() {
   const [step, setStep] = useState(1)
@@ -189,12 +189,22 @@ export default function Commande() {
                           letterSpacing:'.08em', textTransform:'uppercase',
                         }}>Populaire</span>
                       )}
-                      {/* Image / mockup area — real product photos coming soon, emoji placeholder for now */}
+                      {/* Image / mockup area — real product photo from Supabase, emoji fallback if it fails to load */}
                       <div style={{
                         aspectRatio:'4/3', background:'var(--cream-dark)',
                         display:'flex', alignItems:'center', justifyContent:'center',
+                        overflow:'hidden',
                       }}>
-                        <span style={{fontSize:'4.2rem'}}>{p.emoji}</span>
+                        <img
+                          src={`${SUPABASE_IMG_BASE}/${p.photo}`}
+                          alt={p.name}
+                          style={{width:'100%',height:'100%',objectFit:'cover'}}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                            e.currentTarget.nextSibling.style.display = 'flex'
+                          }}
+                        />
+                        <span style={{fontSize:'4.2rem',display:'none'}}>{p.emoji}</span>
                       </div>
                       <div style={{padding:'1rem 1.1rem'}}>
                         <div style={{fontFamily:'Anton',fontSize:'1.05rem',textTransform:'uppercase',letterSpacing:'.02em',marginBottom:'.3rem'}}>{p.name}</div>
